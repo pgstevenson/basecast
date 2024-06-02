@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from datetime import datetime
 from dotenv import load_dotenv
 import os
@@ -98,11 +100,10 @@ load = Podbean(
     episode['logo']
 )
 
-# load.request_token()
-# media = load.upload_auth(path_uri, "audio/mpeg")
-# load.media_key = media["file_key"]
-# upload(media["presigned_url"], path_uri, "audio/mpeg")
-# load.publish()
+load.request_token()
+media = load.upload_auth(path_uri, "audio/mpeg")
+load.media_key = media["file_key"]
+upload(media["presigned_url"], path_uri, "audio/mpeg")
+load.publish()
 
-print('OK')
 sys.exit(0)

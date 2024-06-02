@@ -10,7 +10,7 @@ A python project to prepare podcast mp3 files and uploaded to a host.
 
 ### 1. Cassandra
 
-> docker run -v ...\cql:/root -v ...\cql\data:/var/lib/cassandra -p 9042:9042 -d --restart always --name cassandra
+> docker run -v C:\...\cql:/root -v C:\...\cql\data:/var/lib/cassandra -p 9042:9042 -d --restart always --name cassandra
 > --hostname cassandra --network cassandra cassandra
 > 
 
@@ -29,12 +29,7 @@ A python project to prepare podcast mp3 files and uploaded to a host.
 
 ### 3. Engine
 
-> python .\py\app\01_driver.py
-> 
-
-Containerisation under development:
-
 > docker build -t pgstevenson/basecast_engine py/.
 > 
-> docker run --rm --name basecast_engine --network cassandra pgstevenson/basecast_engine
+> docker run -d --restart always -v C:\Users\pstev\downloads:/landing_zone -v C:\basecast\data:/data --name basecast_engine --network cassandra pgstevenson/basecast_engine
 > 

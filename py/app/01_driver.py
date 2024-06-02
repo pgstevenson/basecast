@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from dotenv import load_dotenv
 import os
 import requests
@@ -6,9 +8,7 @@ from time import sleep
 
 load_dotenv()
 
-i = 0
-while i < 5:
-    sleep(5)
+while True:
     rows = requests.get(os.getenv('API_GET_DRIVER')).json()
     for row in rows:
         if row['operation'][1] == "bronze_01_move.py":
@@ -17,8 +17,6 @@ while i < 5:
             row['trigger'] = eval(os.getenv('ROOT_URI')) + row['trigger']
         trigger = os.path.join(*row['trigger'])
         if os.path.isfile(trigger):
-            row['operation'][1] = eval(os.getenv('SCRIPT_URI')) + [row['operation'][1]]
-            row['operation'][1] = os.path.join(*row['operation'][1])
-            subprocess.run(" ".join(row['operation']))
+            subprocess.run(row['operation'])
             requests.delete(os.getenv('API_DELETE_DRIVER') % row['job_id'])
-    i += 1
+    sleep(60)
