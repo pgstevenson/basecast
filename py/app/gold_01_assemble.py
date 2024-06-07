@@ -9,7 +9,7 @@ import urllib.parse
 
 load_dotenv()
 
-episode = requests.get(os.getenv('API_GET_EPISODE') % sys.argv[1]).json()
+episode = requests.get(os.getenv('API_GET_EPISODE') % (sys.argv[1], sys.argv[2])).json()
 
 filename = episode['bronze'][2].split('.')
 uri = episode['bronze'][:]
@@ -19,7 +19,7 @@ path_out = eval(os.getenv('ROOT_URI')) + uri
 path_out = os.path.join(*path_out)
 write_path = eval(os.getenv('ROOT_URI')) + uri[:2]
 write_path = os.path.join(*write_path)
-operation = ['python', '02_post.py', sys.argv[1]]
+operation = ['python', '02_post.py', sys.argv[1], sys.argv[2]]
 
 if episode['clips'] is None:
     sys.exit(1)
@@ -47,6 +47,7 @@ out.write_audiofile(path_out)
 
 requests.patch(os.getenv('API_PATCH_EPISODE') % (
     sys.argv[1],
+    sys.argv[2],
     'gold',
     urllib.parse.quote_plus(','.join(uri))
 ))

@@ -81,7 +81,7 @@ def upload(url, file, content_type) -> int:
 
 load_dotenv()
 
-episode = requests.get(os.getenv('API_GET_EPISODE') % sys.argv[1]).json()
+episode = requests.get(os.getenv('API_GET_EPISODE') % (sys.argv[1], sys.argv[2])).json()
 podcast = requests.get(os.getenv('API_GET_PODCAST') % str(episode['podcast_id'])).json()
 
 path_uri = eval(os.getenv('ROOT_URI')) + episode['gold']
@@ -100,10 +100,10 @@ load = Podbean(
     episode['logo']
 )
 
-load.request_token()
-media = load.upload_auth(path_uri, "audio/mpeg")
-load.media_key = media["file_key"]
-upload(media["presigned_url"], path_uri, "audio/mpeg")
-load.publish()
-
+# load.request_token()
+# media = load.upload_auth(path_uri, "audio/mpeg")
+# load.media_key = media["file_key"]
+# upload(media["presigned_url"], path_uri, "audio/mpeg")
+# load.publish()
+print("OK")
 sys.exit(0)

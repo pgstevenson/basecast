@@ -22,14 +22,20 @@ A python project to prepare podcast mp3 files and uploaded to a host.
 
 ### 2. API
 
-> docker build -t pgstevenson/basecast_api api/.
+> docker build -t pgstevenson/basecast_api:1.0 api/.
 > 
-> docker run -d --restart always --name basecast_api --network cassandra -p 5000:5000 pgstevenson/basecast_api
+> docker run -d --restart always --name basecast_api --network cassandra -p 5000:5000 pgstevenson/basecast_api:1.0
 > 
 
 ### 3. Engine
 
-> docker build -t pgstevenson/basecast_engine py/.
+> docker build -t pgstevenson/basecast_engine:1.0 py/.
 > 
-> docker run -d --restart always -v C:\Users\pstev\downloads:/landing_zone -v C:\basecast\data:/data --name basecast_engine --network cassandra pgstevenson/basecast_engine
+> docker run -d --restart always -v C:\Users\pstev\downloads:/landing_zone -v C:\basecast\data:/data --name basecast_engine --network cassandra pgstevenson/basecast_engine:1.0
 > 
+
+### Dev containers
+
+> docker build -t pgstevenson/basecast_api:dev api/.
+> 
+> docker run --rm --name basecast_api-dev --network cassandra -p 5001:5000 pgstevenson/basecast_api:dev

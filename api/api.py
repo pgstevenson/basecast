@@ -21,6 +21,15 @@ session.row_factory = dict_factory
 app = Flask(__name__)
 
 
+@app.route('/v1/clients/<client_id>/tokens', methods=['GET'])
+def client_tokens(client_id):
+    try:
+        res = session.execute("SELECT tokens FROM clients WHERE client_id=%s" % client_id).one()
+        return jsonify(res)
+    except:
+        return jsonify(400)
+
+
 @app.route('/v1/drivers', methods=['GET'])
 def get_drivers():
     try:
@@ -54,24 +63,36 @@ def delete_drivers(job_id):
         return jsonify(400)
 
 
-@app.route('/v1/episodes/<episode_id>', methods=['GET'])
-def get_episode(episode_id):
+@app.route('/v1/podcasts/<podcast_id>', methods=['GET'])
+def get_podcast(podcast_id):
     try:
-        query = "SELECT * FROM episodes WHERE episode_id=%s" % episode_id
+        query = "SELECT * FROM podcasts WHERE podcast_id=%s" % podcast_id
         out = session.execute(query).one()
-        return jsonify(dict(out))
+        return jsonify(out)
     except:
         return jsonify(400)
 
 
-@app.route('/v1/episodes', methods=['POST'])
-def post_job():
+@app.route('/v1/podcasts/<podcast_id>/assets', methods=['GET'])
+def get_assets(podcast_id):
+    try:
+        rows = session.execute("SELECT * FROM assets_by_podcasts WHERE podcast_id=%s" % podcast_id)
+        out = []
+        for row in rows:
+            out.append(dict(row))
+        return jsonify(out)
+    except:
+        return jsonify(400)
+
+
+@app.route('/v1/podcasts/<podcast_id>/episodes', methods=['POST'])
+def post_job(podcast_id):
     try:
         episode_id = uuid.uuid1()
         trigger = ['bronze', request.args['podcast_id'], request.args['filename']]
-        query = """INSERT INTO episodes (podcast_id, episode_id, intro, outro, bronze, clips, title, description, status,
+        query = """INSERT INTO episodes_by_podcasts (podcast_id, episode_id, intro, outro, bronze, clips, title, description, status,
             type, logo) VALUES (%s, %s, %s, %s, %s, %s, $$%s$$, $$%s$$, '%s', '%s', '%s');""" % (
-            request.args['podcast_id'],
+            podcast_id,
             episode_id,
             request.args['intro'].split(','),
             request.args['outro'].split(','),
@@ -90,22 +111,37 @@ def post_job():
         return(400)
 
 
-@app.route('/v1/episodes/<episode_id>', methods=['PATCH'])
-def update_episode(episode_id):
+@app.route('/v1/podcasts/<podcast_id>/episodes/<episode_id>', methods=['GET'])
+def get_episode(podcast_id, episode_id):
     try:
-        query = "UPDATE episodes SET %s=%s WHERE episode_id=%s" % (
-            request.args['param'], request.args['value'].split(','), episode_id)
+        query = "SELECT * FROM episodes_by_podcasts WHERE podcast_id=%s AND episode_id=%s" % (podcast_id, episode_id)
+        out = session.execute(query).one()
+        return jsonify(dict(out))
+    except:
+        return jsonify(400)
+
+
+@app.route('/v1/podcasts/<podcast_id>/episodes/<episode_id>', methods=['PATCH'])
+def update_episode(podcast_id, episode_id):
+    try:
+        query = "UPDATE episodes_by_podcasts SET %s=%s WHERE podcast_id=%s AND episode_id=%s" % (
+            request.args['param'],
+            request.args['value'].split(','),
+            podcast_id,
+            episode_id)
         session.execute(query)
         return jsonify(200)
     except:
         return jsonify(400)
 
 
-@app.route('/v1/podcasts/<podcast_id>', methods=['GET'])
-def get_podcast(podcast_id):
+@app.route('/v1/users/<user_email>/podcasts', methods=['GET'])
+def get_podcasts(user_email):
     try:
-        query = "SELECT * FROM podcasts WHERE podcast_id=%s" % podcast_id
-        out = session.execute(query).one()
+        rows = session.execute("SELECT user_email, podcasts FROM users WHERE user_email='%s'" % user_email)
+        out = []
+        for row in rows:
+            out.append(dict(row))
         return jsonify(out)
     except:
         return jsonify(400)
