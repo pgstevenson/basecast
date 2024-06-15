@@ -1,8 +1,8 @@
 -- ENVIRONMENT --
 
-DROP KEYSPACE IF EXISTS basecast_dev;
-CREATE KEYSPACE basecast_dev WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
-USE basecast_dev;
+DROP KEYSPACE IF EXISTS basecast;
+CREATE KEYSPACE basecast WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
+USE basecast;
 
 -- TABLES --
 
@@ -46,9 +46,6 @@ INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, file
 INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 2e09eb04-1a41-11ef-ae03-325096b39f47, 'bronze', 'thumb', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Daniel - Podcast.png', 'Daniel - Podcast.png');
 INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 2e09eb54-1a41-11ef-a3d3-325096b39f47, 'bronze', 'audio', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Church intro.wav', 'Church intro.wav');
 INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 2e09eb9a-1a41-11ef-8ce7-325096b39f47, 'bronze', 'audio', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Outro_Jul23.wav', 'Outro_Jul23.wav');
--- INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 51761d06-1a46-11ef-ac81-325096b39f47, 'bronze', 'video', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Blacktown Anglican Livestream 5th May 2024 _ Daniel 1.mp4', 'Blacktown Anglican Livestream 5th May 2024 _ Daniel 1.mp4');
--- INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 51761f0e-1a46-11ef-a97e-325096b39f47, 'bronze', 'video', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Blacktown Anglican Livestream 12th May 2024 _ Daniel 2.mp4', 'Blacktown Anglican Livestream 12th May 2024 _ Daniel 2.mp4');
--- INSERT INTO assets_by_podcasts (podcast_id, asset_id, medallion, type, uri, filename) VALUES (98c8cd08-1a4a-11ef-a854-325096b39f47, 51761f7c-1a46-11ef-930c-325096b39f47, 'bronze', 'video', 'bronze/98c8cd08-1a4a-11ef-a854-325096b39f47/Blacktown Anglican Livestream 19th May 2024 _ Daniel 3.mp4', 'Blacktown Anglican Livestream 19th May 2024 _ Daniel 3.mp4');
 
 -- Episodes --
 
@@ -57,38 +54,16 @@ DROP TABLE IF EXISTS episodes_by_podcasts;
 CREATE TABLE episodes_by_podcasts (
     episode_id timeuuid,
 	podcast_id timeuuid,
-	intro list<text>,
-	outro list<text>,
+	intro text,
+	outro text,
     clips list<FROZEN<list<int>>>,
 	title text,
 	description text,
 	status text,
 	type text,
 	logo text,
-	bronze list<text>,
-	silver list<text>,
-	gold list<text>,
+	filename text,
 	PRIMARY KEY (podcast_id, episode_id)
-);
-
-INSERT INTO episodes_by_podcasts (podcast_id, episode_id, intro, outro, bronze, clips, title, description, status, type, logo) VALUES (
-    98c8cd08-1a4a-11ef-a854-325096b39f47,
-    355f038c-1bbb-11ef-91d5-325096b39f47,
-    ['bronze', '98c8cd08-1a4a-11ef-a854-325096b39f47', 'Church intro.wav'],
-    ['bronze', '98c8cd08-1a4a-11ef-a854-325096b39f47', 'Outro_Jul23.wav'],
-    ['bronze', '98c8cd08-1a4a-11ef-a854-325096b39f47', 'Blacktown Anglican Livestream 19th May 2024 _ Daniel 3.mp4'],
-    [[2358,4412]],
-    'The King''s Image, Daniel 3',
-    '<p>We live stream every Sunday at 10 AM (AEDT). Join us here:</p><p><a href="https://www.youtube.com/blacktownanglican">www.youtube.com/blacktownanglican</a></p><p>Or find us online at: <a href="https://bac.org.au/">bac.org.au</a></p>',
-    'draft',
-    'public',
-    'https://mcdn.podbean.com/mf/web/dqkrm4nagkzv7dq7/Daniel_THUMB.jpg'
-);
-
-INSERT INTO episodes_by_podcasts (podcast_id, episode_id, title) VALUES (
-    d74a045e-247a-11ef-b59b-325096b39f47,
-    d74a04f4-247a-11ef-ab2f-325096b39f47,
-    'First podcast - test'
 );
 
 -- Driver --
@@ -97,16 +72,11 @@ DROP TABLE IF EXISTS driver;
 
 CREATE TABLE driver (
 	job_id timeuuid,
-	trigger list<text>,
-	operation list<text>,
+	podcast_id timeuuid,
+	episode_id timeuuid,
+	filename text,
 	PRIMARY KEY (job_id)
 );
-
--- INSERT INTO driver (job_id, trigger, operation) VALUES (
---     now(),
---     ['bronze', '98c8cd08-1a4a-11ef-a854-325096b39f47', 'Blacktown Anglican Livestream 19th May 2024 _ Daniel 3.mp4'],
---     ['python', 'gold_01_assemble.py', '355f038c-1bbb-11ef-91d5-325096b39f47']
--- );
 
 -- Podcasts --
 

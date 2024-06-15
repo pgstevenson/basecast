@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from dotenv import load_dotenv
 import os
 import requests
-import sys
 
 
 class Podbean:
@@ -66,44 +64,14 @@ class Podbean:
             print(x["error"])
             print(x["error_description"])
 
-
-def upload(url, file, content_type) -> int:
-    headers = {"Content-Type": content_type}
-    files = {"file": (os.path.basename(file), open(file, 'rb'))}
-    r = requests.put(url, headers=headers, files=files)
-    print(datetime.now(), f" {os.path.basename(file)} Upload status code: {r.status_code}")
-    if r.status_code != 200:
-        x = r.json()
-        print(x["error"])
-        print(x["error_description"])
-    return 0
-
-
-load_dotenv()
-
-episode = requests.get(os.getenv('API_GET_EPISODE') % (sys.argv[1], sys.argv[2])).json()
-podcast = requests.get(os.getenv('API_GET_PODCAST') % str(episode['podcast_id'])).json()
-
-path_uri = eval(os.getenv('ROOT_URI')) + episode['gold']
-path_uri = os.path.join(*path_uri)
-
-load = Podbean(
-    os.getenv('PODBEAN_API_TOKEN'),
-    os.getenv('PODBEAN_API_UPLOAD'),
-    os.getenv('PODBEAN_API_EPISODE'),
-    podcast['host_id'],
-    podcast['host_secret'],
-    episode['title'],
-    episode['description'],
-    episode['status'],
-    episode['type'],
-    episode['logo']
-)
-
-# load.request_token()
-# media = load.upload_auth(path_uri, "audio/mpeg")
-# load.media_key = media["file_key"]
-# upload(media["presigned_url"], path_uri, "audio/mpeg")
-# load.publish()
-print("OK")
-sys.exit(0)
+    @staticmethod
+    def upload(url, file, content_type) -> int:
+        headers = {"Content-Type": content_type}
+        files = {"file": (os.path.basename(file), open(file, 'rb'))}
+        r = requests.put(url, headers=headers, files=files)
+        print(datetime.now(), f" {os.path.basename(file)} Upload status code: {r.status_code}")
+        if r.status_code != 200:
+            x = r.json()
+            print(x["error"])
+            print(x["error_description"])
+        return 0

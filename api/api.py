@@ -18,6 +18,8 @@ cluster = Cluster([os.getenv('SERVER')])
 session = cluster.connect(os.getenv('KEYSPACE'))
 session.row_factory = dict_factory
 
+root = eval(os.getenv('LANDING_ZONE'))
+
 app = Flask(__name__)
 
 
@@ -25,42 +27,24 @@ app = Flask(__name__)
 def client_tokens(client_id):
     try:
         res = session.execute("SELECT tokens FROM clients WHERE client_id=%s" % client_id).one()
-        return jsonify(res)
+        return jsonify({"response": 200, "data": res})
     except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/drivers', methods=['GET'])
 def get_drivers():
     try:
         rows = session.execute("SELECT * FROM driver")
-        out = []
         for row in rows:
-            out.append(dict(row))
-        return jsonify(out)
+            job = dict(row)
+            path = root + [job['filename']]
+            if os.path.isfile(os.path.join(*path)):
+                session.execute("DELETE FROM driver WHERE job_id=%s" % job['job_id'])
+                return jsonify({"response": 200, "data": job})
+        return jsonify({'response': 204})
     except:
-        return jsonify(400)
-
-
-@app.route('/v1/drivers', methods=['POST'])
-def post_drivers():
-    try:
-        query = "INSERT INTO driver (job_id, operation, trigger) values (%s, %s, %s)" % (
-            uuid.uuid1(), request.args['operation'].split(','), request.args['trigger'].split(','))
-        session.execute(query)
-        return jsonify(200)
-    except:
-        return jsonify(400)
-
-
-@app.route('/v1/drivers/<job_id>', methods=['DELETE'])
-def delete_drivers(job_id):
-    query = "DELETE FROM driver WHERE job_id=%s" % job_id
-    try:
-        session.execute(query)
-        return jsonify(200)
-    except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/podcasts/<podcast_id>', methods=['GET'])
@@ -68,9 +52,9 @@ def get_podcast(podcast_id):
     try:
         query = "SELECT * FROM podcasts WHERE podcast_id=%s" % podcast_id
         out = session.execute(query).one()
-        return jsonify(out)
+        return jsonify({"response": 200, "data": dict(out)})
     except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/podcasts/<podcast_id>/assets', methods=['GET'])
@@ -80,35 +64,44 @@ def get_assets(podcast_id):
         out = []
         for row in rows:
             out.append(dict(row))
-        return jsonify(out)
+        return jsonify({"response": 200, "data": out})
     except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/podcasts/<podcast_id>/episodes', methods=['POST'])
 def post_job(podcast_id):
     try:
         episode_id = uuid.uuid1()
-        trigger = ['bronze', request.args['podcast_id'], request.args['filename']]
-        query = """INSERT INTO episodes_by_podcasts (podcast_id, episode_id, intro, outro, bronze, clips, title, description, status,
-            type, logo) VALUES (%s, %s, %s, %s, %s, %s, $$%s$$, $$%s$$, '%s', '%s', '%s');""" % (
-            podcast_id,
-            episode_id,
-            request.args['intro'].split(','),
-            request.args['outro'].split(','),
-            trigger,
-            [[time_to_sec(request.args['start_time']), time_to_sec(request.args['end_time'])]],
-            request.args['title'],
-            request.args['description'],
-            request.args['status'],
-            request.args['type'],
-            request.args['logo']
-        )
+        query = """INSERT INTO episodes_by_podcasts (podcast_id, episode_id, intro, outro, filename, clips, title,
+            description, status, type, logo) VALUES (%s, %s, '%s', '%s', '%s', %s, $$%s$$, $$%s$$, '%s', '%s', '%s');""" % (
+                podcast_id,
+                episode_id,
+                request.args['intro'],
+                request.args['outro'],
+                request.args['filename'],
+                [[time_to_sec(request.args['start_time']), time_to_sec(request.args['end_time'])]],
+                request.args['title'],
+                request.args['description'],
+                request.args['status'],
+                request.args['type'],
+                request.args['logo']
+            )
         session.execute(query)
-        res = {"episode_id": str(episode_id)}
-        return jsonify(res)
+        return jsonify({"response": 201, "data": {"episode_id": str(episode_id)}})
     except:
-        return(400)
+        return jsonify({'response': 400})
+
+
+@app.route('/v1/podcasts/<podcast_id>/episodes/<episode_id>', methods=['POST'])
+def post_drivers2(podcast_id, episode_id):
+    try:
+        query = "INSERT INTO driver (job_id, podcast_id, episode_id, filename) values (%s, %s, %s, '%s')" % (
+            uuid.uuid1(), podcast_id, episode_id, request.args['filename'])
+        session.execute(query)
+        return jsonify({'response': 201})
+    except:
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/podcasts/<podcast_id>/episodes/<episode_id>', methods=['GET'])
@@ -116,23 +109,9 @@ def get_episode(podcast_id, episode_id):
     try:
         query = "SELECT * FROM episodes_by_podcasts WHERE podcast_id=%s AND episode_id=%s" % (podcast_id, episode_id)
         out = session.execute(query).one()
-        return jsonify(dict(out))
+        return jsonify({"response": 200, "data": dict(out)})
     except:
-        return jsonify(400)
-
-
-@app.route('/v1/podcasts/<podcast_id>/episodes/<episode_id>', methods=['PATCH'])
-def update_episode(podcast_id, episode_id):
-    try:
-        query = "UPDATE episodes_by_podcasts SET %s=%s WHERE podcast_id=%s AND episode_id=%s" % (
-            request.args['param'],
-            request.args['value'].split(','),
-            podcast_id,
-            episode_id)
-        session.execute(query)
-        return jsonify(200)
-    except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 @app.route('/v1/users/<user_email>/podcasts', methods=['GET'])
@@ -142,9 +121,9 @@ def get_podcasts(user_email):
         out = []
         for row in rows:
             out.append(dict(row))
-        return jsonify(out)
+        return jsonify({"response": 200, "data": out})
     except:
-        return jsonify(400)
+        return jsonify({'response': 400})
 
 
 if __name__ == '__main__':

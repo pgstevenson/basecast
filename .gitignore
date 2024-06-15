@@ -53,7 +53,7 @@ web/*
 
 # Other files #
 ###############
-*.env
+
 
 # Do not ignore #
 #################
