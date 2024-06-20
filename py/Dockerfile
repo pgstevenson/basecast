@@ -2,7 +2,7 @@ FROM python:3.11-bookworm
 
 WORKDIR /usr/src/app
 
-RUN apt update && apt install dos2unix
+RUN apt update && apt -y install dos2unix ffmpeg
 
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt ./

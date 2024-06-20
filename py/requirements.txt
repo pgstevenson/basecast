@@ -1,3 +1,4 @@
+ffmpeg-normalize==1.28.1
+pedalboard==0.9.6
 python-dotenv==0.21.0
-moviepy==1.0.3
-ffmpeg==1.4
+requests==2.32.3

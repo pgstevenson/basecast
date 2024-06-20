@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from cassandra.cluster import Cluster
 from cassandra.query import dict_factory
 from dotenv import load_dotenv
+from gevent.pywsgi import WSGIServer
 import os
 import uuid
 
@@ -127,4 +128,6 @@ def get_podcasts(user_email):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # app.run(host='0.0.0.0', port=5000)
+    http_server = WSGIServer(('', 5000), app)
+    http_server.serve_forever()
