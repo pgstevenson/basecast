@@ -51,6 +51,7 @@ data/*
 */__pycache__/*
 */*/__pycache__/*
 web/*
+.vs/*
 
 # Other files #
 ###############

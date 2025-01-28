@@ -3,8 +3,8 @@
 import os
 from pathlib import Path
 import shutil
-from pedalboard import Pedalboard, Compressor, HighpassFilter, NoiseGate, Limiter
-from pedalboard.io import AudioFile
+# from pedalboard import Pedalboard, Compressor, HighpassFilter, NoiseGate, Limiter
+# from pedalboard.io import AudioFile
 import subprocess
 from string import ascii_lowercase as letter
 
@@ -41,16 +41,16 @@ def silver_01_process(dat, content):
     clip_list = eval(os.getenv('TMP_URI')) + ['list.txt']
     out_uri = eval(os.getenv('TMP_URI')) + ['silver.mp3']
 
-    board = Pedalboard([
-        Compressor(threshold_db=4, ratio=10, attack_ms=1, release_ms=30),
-        HighpassFilter(cutoff_frequency_hz=100),
-        NoiseGate(threshold_db=-30, ratio=2.5, release_ms=60),
-        Limiter(threshold_db=-0.2)
-    ])
+    # board = Pedalboard([
+    #     Compressor(threshold_db=4, ratio=10, attack_ms=1, release_ms=30),
+    #     HighpassFilter(cutoff_frequency_hz=100),
+    #     NoiseGate(threshold_db=-30, ratio=2.5, release_ms=60),
+    #     Limiter(threshold_db=-0.2)
+    # ])
 
     cl = open(os.path.join(*clip_list), "w")
     for clip in dat['clips']:
-        filename_tmp = eval(os.getenv('TMP_URI')) + [letter[j] + "_o.mp3"]
+        # filename_tmp = eval(os.getenv('TMP_URI')) + [letter[j] + "_o.mp3"]
         filename = eval(os.getenv('TMP_URI')) + [letter[j] + ".mp3"]
         cl.write("file '" + letter[j] + ".mp3'\n")
         j += 1
@@ -58,15 +58,15 @@ def silver_01_process(dat, content):
         # 1. strip clip(s)
         subprocess.run(['ffmpeg', '-y', '-ss', str(clip[0]), '-to', str(clip[1]),
                         '-i', content, '-vn', '-codec:a', 'libmp3lame', '-qscale:a', '6',
-                        '-b:a', '128k', os.path.join(*filename_tmp)])
+                        '-b:a', '128k', os.path.join(*filename)])
 
         # 2. apply effects
-        with AudioFile(os.path.join(*filename_tmp)) as f:
-            with AudioFile(os.path.join(*filename), 'w', f.samplerate, f.num_channels) as o:
-                while f.tell() < f.frames:
-                    chunk = f.read(f.samplerate)
-                    effected = board(chunk, f.samplerate, reset=False)
-                    o.write(effected)
+        # with AudioFile(os.path.join(*filename_tmp)) as f:
+        #     with AudioFile(os.path.join(*filename), 'w', f.samplerate, f.num_channels) as o:
+        #         while f.tell() < f.frames:
+        #             chunk = f.read(f.samplerate)
+        #             effected = board(chunk, f.samplerate, reset=False)
+        #             o.write(effected)
     cl.close()
     concat(os.path.join(*clip_list), os.path.join(*out_uri))
     return os.path.join(*out_uri)
@@ -92,7 +92,7 @@ def gold_01_assemble(episode, content):
     cl.close()
 
     # 3. Normalize loudness
-    subprocess.run(['ffmpeg-normalize', '-f', '-t', '-16'] + files +
+    subprocess.run(['ffmpeg-normalize', '-f', '-t', '-14', '-lrt', '11', '-tp', '-1'] + files +
                    ['-c:a', 'libmp3lame', '-ext', 'mp3', '-of', os.path.join(*output_dir)])
     concat(os.path.join(*part_list), os.path.join(*out))
 
