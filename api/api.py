@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from cassandra.cluster import Cluster
 from cassandra.query import dict_factory
 from dotenv import load_dotenv
@@ -22,6 +23,7 @@ session.row_factory = dict_factory
 root = eval(os.getenv('LANDING_ZONE'))
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route('/v1/clients/<client_id>/tokens', methods=['GET'])
