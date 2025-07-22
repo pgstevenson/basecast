@@ -45,19 +45,16 @@ Thumbs.db
 
 # Project directories #
 #######################
-.idea/*
-cql/*
-data/*
+assets/*
 */__pycache__/*
-*/*/__pycache__/*
 web/*
 .vs/*
+.venv/*
 
 # Other files #
 ###############
-
+basecast.bat
+main.ipynb
 
 # Do not ignore #
 #################
-!*/placeholder.txt
-!cql/init.cql

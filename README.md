@@ -3,32 +3,32 @@ Basecast
 
 A python project to prepare podcast mp3 files and uploaded to a host.
 
-## Set-up
+A call to the basecast API container will spin up another container to monitor for the raw data file and start processing once it is available. Start the API with:
 
-> docker network create cassandra
-> 
+> docker run -d --restart always -v "//c/PATH/TO/ASSETS:/app/assets" -v "//var/run/docker.sock://var/run/docker.sock" -p  5000:5000 --name basecast_api pgstevenson/basecast_api
 
-### 1. Cassandra
+The assets foler should contain:
 
-> docker run -v C:\basecast\cql:/root -v C:\basecast\cql\data:/var/lib/cassandra -p 9042:9042 -d --restart always --name cassandra --hostname cassandra --network cassandra cassandra
-> 
+* `accounts.ini`, e.g.:
 
-[exec]
-> cqlsh
-> 
-> source  '~/init.cql';
-> 
+```
+[DEV]
+CLIENT_ID=XXX
+CLIENT_SECRET=XX
+```
 
-### 2. API
+* `config.ini`, e.g.:
 
-> docker build -t pgstevenson/basecast_api:1.0 api/.
-> 
-> docker run -d --restart always -v C:\Users\pstev\downloads:/landing_zone --name basecast_api --network cassandra -p 5000:5000 pgstevenson/basecast_api:1.0
-> 
+```
+[PROD]
+LOCAL_ASSETS=C:/PATH/TO/ASSETS
+LOCAL_LZ=C:/PATH/TO/DOWNLOADS
 
-### 3. Engine
+[FEATURES]
+PROCESS_PODCAST=True
+UPLOAD_PODCAST=True
+```
 
-> docker build -t pgstevenson/basecast_engine:1.0 py/.
-> 
-> docker run --rm -v C:\Users\pstev\downloads:/landing_zone -v C:\basecast\data:/data --network cassandra pgstevenson/basecast_engine:1.0
-> 
+The assets folder should also include other static files needed for the podcast, i.e. the intro and outro clips.
+
+Currently, the UI for the processing app is `UI.xlsm`, which sends the podcast episode information to the API endpoint.
