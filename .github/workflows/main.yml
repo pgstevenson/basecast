@@ -25,6 +25,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: api/.
           push: true
-          tags: sreehariskumar/flaskapp:latest
+          tags: pgstevenson/basecast_api:latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: engine/.
+          push: true
+          tags: pgstevenson/basecast_engine:latest
