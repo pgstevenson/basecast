@@ -102,14 +102,14 @@ if __name__ == '__main__':
       found = True
       lz_path = os.path.join(os.getenv('PODCAST_LZ'), files[idx[0]])
       episode.update_filename(os.path.join(os.getenv('PODCAST_DATA'), files[idx[0]]))
-      if eval(config['FEATURES']['PROCESS_PODCAST']):
+      if config['FEATURES']['PROCESS_PODCAST'].lower()=='true':
         shutil.copy(lz_path, episode.filename)
         print('Bronze: Done', flush=True)
         episode.process()
         print('Silver: Done', flush=True)
         episode.assemble()
         print('Gold: Done', flush=True)
-      if eval(config['FEATURES']['PROCESS_PODCAST']) and eval(config['FEATURES']['UPLOAD_PODCAST']):
+      if config['FEATURES']['PROCESS_PODCAST'].lower()=='true' and config['FEATURES']['UPLOAD_PODCAST'].lower()=='true':
         print('Requesting Podbean upload...', flush=True)
         token_resp = requests.post('https://api.podbean.com/v1/oauth/token', auth=(accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_ID'], accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_SECRET']), data={'grant_type': 'client_credentials'}).json()
         media_resp = requests.get('https://api.podbean.com/v1/files/uploadAuthorize', params={'access_token': token_resp['access_token'], 'filename': os.path.basename(episode.podcast_path), 'filesize': os.path.getsize(episode.podcast_path), 'content_type': 'audio/mpeg'}).json()

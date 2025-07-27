@@ -25,8 +25,11 @@ LOCAL_ASSETS=C:/PATH/TO/ASSETS
 LOCAL_LZ=C:/PATH/TO/DOWNLOADS
 
 [FEATURES]
-PROCESS_PODCAST=True
-UPLOAD_PODCAST=True
+ENGINE_CONTAINER=pgstevenson/basecast_engine
+PROCESS_PODCAST=TRUE
+UPLOAD_PODCAST=TRUE
+REMOVE_CONTAINER=TRUE
+DETACH_CONTAINER=TRUE
 ```
 
 The assets folder should also include other static files needed for the podcast, i.e. the intro and outro clips.

@@ -35,7 +35,7 @@ class Episode:
     
     def start_workflow(self, client):
         out = client.containers.run(
-            'pgstevenson/basecast_engine',
+            config['FEATURES']['ENGINE_CONTAINER'],
             environment={
                 'INTRO': self.intro,
                 'OUTRO': self.outro, 
@@ -54,8 +54,8 @@ class Episode:
                 config['PROD']['LOCAL_LZ']: {'bind': os.getenv('PODCAST_LZ'), 'mode': 'rw'},
                 config['PROD']['LOCAL_ASSETS']: {'bind': os.getenv('PODCAST_ASSETS'), 'mode': 'rw'}
             },
-            detach=True,
-            remove=True
+            detach=config['FEATURES']['DETACH_CONTAINER'].lower()=='true',
+            remove=config['FEATURES']['REMOVE_CONTAINER'].lower()=='true'
             )
         return 0
 
