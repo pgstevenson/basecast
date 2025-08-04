@@ -119,3 +119,5 @@ if __name__ == '__main__':
         print('Upload complete.', flush=True)
       print('Done.', flush=True)
     sleep(5)
+  if config['FEATURES']['IDLE_ENGINE'].lower()=='true':
+     sleep(9999)
