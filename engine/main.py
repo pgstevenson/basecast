@@ -1,4 +1,5 @@
 import configparser
+import logging
 import os
 from re import sub
 import requests
@@ -72,6 +73,13 @@ class Episode:
     return None
 
 if __name__ == '__main__':
+
+  logging.basicConfig(filename='/app/engine.log',
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.DEBUG)
+  
   accounts = configparser.ConfigParser()
   accounts.read('/app/assets/accounts.ini')
 
@@ -108,16 +116,41 @@ if __name__ == '__main__':
         episode.process()
         print('Silver: Done', flush=True)
         episode.assemble()
+        logging.info(f'File path: {episode.podcast_path}')
+        logging.info(f'File name: {os.path.basename(episode.podcast_path)}')
+        logging.info(f'File size: {os.path.getsize(episode.podcast_path)}')
         print('Gold: Done', flush=True)
       if config['FEATURES']['PROCESS_PODCAST'].lower()=='true' and config['FEATURES']['UPLOAD_PODCAST'].lower()=='true':
         print('Requesting Podbean upload...', flush=True)
-        token_resp = requests.post('https://api.podbean.com/v1/oauth/token', auth=(accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_ID'], accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_SECRET']), data={'grant_type': 'client_credentials'}).json()
-        media_resp = requests.get('https://api.podbean.com/v1/files/uploadAuthorize', params={'access_token': token_resp['access_token'], 'filename': os.path.basename(episode.podcast_path), 'filesize': os.path.getsize(episode.podcast_path), 'content_type': 'audio/mpeg'}).json()
+        
+        token_resp = requests.post('https://api.podbean.com/v1/oauth/token', auth=(accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_ID'], accounts[os.getenv('PODCAST_ACCOUNT')]['CLIENT_SECRET']), data={'grant_type': 'client_credentials'})
+        token_dat = token_resp.json()
+        if token_resp.status_code != 200:
+          logging.debug(f'uploadAuthorize: {token_resp.status_code}')
+          logging.debug(f'uploadAuthorize: {token_dat["error"]}')
+          logging.debug(f'uploadAuthorize: {token_dat["error_description"]}')
+        
+        media_resp = requests.get('https://api.podbean.com/v1/files/uploadAuthorize', params={'access_token': token_dat['access_token'], 'filename': os.path.basename(episode.podcast_path), 'filesize': os.path.getsize(episode.podcast_path), 'content_type': 'audio/mpeg'})
+        media_dat = media_resp.json()
+        if media_resp.status_code != 200:
+          logging.debug(f'uploadAuthorize: {media_resp.status_code}')
+          logging.debug(f'uploadAuthorize: {media_dat["error"]}')
+          logging.debug(f'uploadAuthorize: {media_dat["error_description"]}')
+        
         print('Upload started...', flush=True)
-        requests.put(media_resp['presigned_url'], headers={'Content-Type': 'audio/mpeg'}, files={'file': (os.path.basename(episode.podcast_path), open(episode.podcast_path, 'rb'))})
-        requests.post('https://api.podbean.com/v1/episodes', data={'access_token': token_resp['access_token'], 'title': episode.title, 'content': episode.description, 'status': episode.status, 'type': episode.type, 'media_key': media_resp['file_key'], 'remote_logo_url': episode.logo})
+        requests.put(media_dat['presigned_url'], headers={'Content-Type': 'audio/mpeg'}, files={'file': (os.path.basename(episode.podcast_path), open(episode.podcast_path, 'rb'))})
+        
+        episodes_resp = requests.post('https://api.podbean.com/v1/episodes', data={'access_token': token_dat['access_token'], 'title': episode.title, 'content': episode.description, 'status': episode.status, 'type': episode.type, 'media_key': media_dat['file_key'], 'remote_logo_url': episode.logo})
+        episodes_dat = episodes_resp.json()
+        if episodes_resp.status_code != 200:
+          logging.debug(f'Episodes: {episodes_resp.status_code}')
+          logging.debug(f'Episodes: {episodes_dat["error"]}')
+          logging.debug(f'Episodes: {episodes_dat["error_description"]}')
+        
+        logging.info('Upload complete.')
         print('Upload complete.', flush=True)
       print('Done.', flush=True)
+    logger = logging.getLogger()
     sleep(5)
   if config['FEATURES']['IDLE_ENGINE'].lower()=='true':
-     sleep(9999)
+    sleep(9999)
