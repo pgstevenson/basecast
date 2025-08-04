@@ -16,7 +16,7 @@ class Episode:
     self.start_time = start_time
     self.end_time = end_time
     self.clip_timestamps = self.unmarshal_clips(clip_timestamps)
-    self.title = title
+    self.title = self.pad_title(title)
     self.description = description
     self.status = status
     self.type = type
@@ -25,6 +25,11 @@ class Episode:
   def update_filename(self, new_value):
     self.filename = new_value
     return None
+  
+  def pad_title(title, n=5):
+    if len(title) < n:
+        title = title.ljust(n)
+    return title
 
   def process(self):
     clips = []
