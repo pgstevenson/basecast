@@ -34,7 +34,11 @@ class Episode:
         return(";".join(o))
     
     def start_workflow(self, client):
-        out = client.containers.run(
+
+        config = configparser.ConfigParser()
+        config.read('/app/assets/config.ini')
+
+        client.containers.run(
             config['FEATURES']['ENGINE_CONTAINER'],
             environment={
                 'INTRO': self.intro,
@@ -63,9 +67,6 @@ app = Flask(__name__)
 CORS(app)
 
 client = docker.from_env()
-
-config = configparser.ConfigParser()
-config.read('/app/assets/config.ini')
 
 @app.route('/v1/podcasts/episode', methods=['POST'])
 def post_episode():
